@@ -25,57 +25,118 @@ ArrayList: To store cards in an ordered manner.
 HashSet: To prevent duplicate cards.
 HashMap<String, List<Card>>: To organize cards based on suits for faster lookup.
 
+Implementation:
+  import java.util.*;
 
-Test Cases
+class Card {
+    private String suit;
+    private String rank;
 
-Test Case 1: No Cards Initially
-Input:
-Display All Cards
-Expected Output:
-No cards found.
+    public Card(String rank, String suit) {
+        this.suit = suit;
+        this.rank = rank;
+    }
 
-Test Case 2: Adding Cards
-Input:
-Add Card: Ace of Spades
-Add Card: King of Hearts
-Add Card: 10 of Diamonds
-Add Card: 5 of Clubs
-Expected Output:
-Card added: Ace of Spades
-Card added: King of Hearts
-Card added: 10 of Diamonds
-Card added: 5 of Clubs
+    public String getSuit() {
+        return suit;
+    }
 
-Test Case 3: Finding Cards by Suit
-Input:
-Find All Cards of Suit: Hearts
-Expected Output:
-King of Hearts
+    public String getRank() {
+        return rank;
+    }
 
-Test Case 4: Searching Suit with No Cards
-Input:
-Find All Cards of Suit: Diamonds
-(If no Diamonds were added)
-Expected Output:
-No cards found for Diamonds.
+    //@Override
+    public String toString() {
+        return rank + " of " + suit;
+    }
 
-Test Case 5: Displaying All Cards
-Input:
-Display All Cards
-Expected Output:
-Ace of Spades
-King of Hearts
-10 of Diamonds
-5 of Clubs
+    //@Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Card card = (Card) obj;
+        return suit.equals(card.suit) && rank.equals(card.rank);
+    }
 
-Test Case 6: Preventing Duplicate Cards
-Input:
-Add Card: King of Hearts
-Expected Output:
-Error: Card "King of Hearts" already exists.
+    //@Override
+    public int hashCode() {
+        return Objects.hash(suit, rank);
+    }
+}
 
-Test Case 7: Removing a Card
-Input:
-Remove Card: 10 of Diamonds
-Expected Output:
-Card removed: 10 of Diamonds
+public class CardCollectionSystem {
+    private Map<String, Set<Card>> cardCollection;
+
+    public CardCollectionSystem() {
+        cardCollection = new HashMap<>();
+    }
+
+    public void addCard(String rank, String suit) {
+        Card card = new Card(rank, suit);
+        cardCollection.putIfAbsent(suit, new HashSet<>());
+        
+        if (cardCollection.get(suit).contains(card)) {
+            System.out.println("Error: Card \"" + card + "\" already exists.");
+        } else {
+            cardCollection.get(suit).add(card);
+            System.out.println("Card added: " + card);
+        }
+    }
+
+    public void findCardsBySuit(String suit) {
+        if (cardCollection.containsKey(suit) && !cardCollection.get(suit).isEmpty()) {
+            cardCollection.get(suit).forEach(card -> System.out.println(card));
+        } else {
+            System.out.println("No cards found for " + suit + ".");
+        }
+    }
+
+    public void displayAllCards() {
+        if (cardCollection.isEmpty() || cardCollection.values().stream().allMatch(Set::isEmpty)) {
+            System.out.println("No cards found.");
+            return;
+        }
+        
+        cardCollection.values().forEach(set -> set.forEach(System.out::println));
+    }
+
+    public void removeCard(String rank, String suit) {
+        Card card = new Card(rank, suit);
+        if (cardCollection.containsKey(suit) && cardCollection.get(suit).remove(card)) {
+            System.out.println("Card removed: " + card);
+            if (cardCollection.get(suit).isEmpty()) {
+                cardCollection.remove(suit);
+            }
+        } else {
+            System.out.println("Error: Card \"" + card + "\" not found.");
+        }
+    }
+
+    public static void main(String[] args) {
+        CardCollectionSystem system = new CardCollectionSystem();
+        
+        // Test Case 1: Display when empty
+        system.displayAllCards();
+
+        // Test Case 2: Adding Cards
+        system.addCard("Ace", "Spades");
+        system.addCard("King", "Hearts");
+        system.addCard("10", "Diamonds");
+        system.addCard("5", "Clubs");
+
+        // Test Case 3: Find all Hearts
+        system.findCardsBySuit("Hearts");
+        
+        // Test Case 4: Find all Diamonds (if none exists)
+        system.findCardsBySuit("Diamonds");
+
+        // Test Case 5: Display all cards
+        system.displayAllCards();
+
+        // Test Case 6: Prevent duplicates
+        system.addCard("King", "Hearts");
+
+        // Test Case 7: Remove a card
+        system.removeCard("10", "Diamonds");
+    }
+}
